@@ -1,2 +1,4 @@
-web: python dowa_dashboard.py
+web: gunicorn dowa_dashboard:app
+
+
 
