@@ -1,12 +1,10 @@
-
 import pandas as pd
 import os, datetime
-from jupyter_dash import JupyterDash
-from dash import dcc, html, dash_table, Input, Output, State
+from dash import Dash, dcc, html, dash_table, Input, Output, State
 
-WORKBOOK_PATH = r"C:/Users/user/OneDrive/Desktop/CENTRAL REGION 1ST FULLY PAID DATA (1).xlsx"
-SHEET_NAME = r"DOWA"
-COLLECTED_FILE = r"C:/Users/user/OneDrive/Desktop/district_dashboards\\collected_dowa.csv"
+WORKBOOK_PATH = "Central Region first fully paid data.xlsx"
+SHEET_NAME = "DOWA"
+COLLECTED_FILE = "collected_dowa.csv"
 DISPLAY_FIELDS = ['Farmer Name', 'Contact', 'District', 'Delivery Mode', 'Delivery Centre', 'Order No', 'Products Code', 'Products Quantity', 'Order Total Price']
 
 # === Load sheet once to speed up searches ===
@@ -45,10 +43,9 @@ def load_collected():
 def save_collected(df):
     df.to_csv(COLLECTED_FILE, index=False)
 
-app = JupyterDash(__name__)
+app = Dash(__name__)
 app.title = f"LOOKUP - {SHEET_NAME}"
 
-# === Responsive index_string ===
 app.index_string = '''
 <!DOCTYPE html>
 <html>
@@ -140,7 +137,6 @@ app.layout = html.Div(style={"backgroundColor": "#0B132B", "color": "#F0F0F0",
     )
 ])
 
-# === Callbacks ===
 @app.callback(
     [Output("result-table","data"), Output("collected-status","children")],
     Input("search-btn","n_clicks"),
@@ -149,7 +145,7 @@ app.layout = html.Div(style={"backgroundColor": "#0B132B", "color": "#F0F0F0",
 def do_search(n, query):
     if not query:
         return [], ""
-    df = MASTER_DF  # use preloaded data
+    df = MASTER_DF
     q = str(query).strip()
     mask = df["Order No"].astype(str).str.contains(q, case=False, na=False) | df["Contact"].astype(str).str.contains(q, case=False, na=False)
     results = df[mask].copy()
@@ -205,4 +201,4 @@ def load_log(_):
     return load_collected().to_dict("records")
 
 if __name__ == "__main__":
-    app.run_server(mode="inline", debug=True)
+    app.run_server(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)), debug=False)
